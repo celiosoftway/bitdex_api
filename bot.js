@@ -1,5 +1,6 @@
 require("dotenv").config();
-const { Telegraf, Markup, session } = require("telegraf");
+const { Telegraf, Scenes, session,Markup  } = require("telegraf");
+const adicionarLiquidezScene = require("./scenes/adicionarLiquidezScene");
 
 const {    
     startHandler,
@@ -14,7 +15,10 @@ const {
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
+// Configurar Stage com cenas
+const stage = new Scenes.Stage([adicionarLiquidezScene,]);
 bot.use(session());
+bot.use(stage.middleware());
 
 // 🔒 Middleware: restringe acesso ao OWNER_ID (id do usuario do telegram)
 bot.use(async (ctx, next) => {
@@ -46,11 +50,28 @@ bot.command("start", transacaoHandler);
 
 // Comandos hears
 bot.hears("👤 Info", infoHandler);
-bot.hears("➕ Adicionar Liquidez", addLiquidezHandler);
-bot.hears("➖ Remover Liquidez", removeLiquidezHandler);
+//bot.hears("➕ Adicionar Liquidez", addLiquidezHandler);
+//bot.hears("➖ Remover Liquidez", removeLiquidezHandler);
 bot.hears("🧾 Balance", balanceHandler);
 bot.hears("💰 Stake", stakeHandler,);
 bot.hears("🔍 Transações", transacaoHandler);
+
+
+bot.hears("➕ Adicionar Liquidez", async (ctx) => {
+  return ctx.reply("⚙️ Deceja adicionar liquidez no contrato?", Markup.inlineKeyboard([
+    [Markup.button.callback("✅ Sim", "addLiquidezAction")],
+    [Markup.button.callback("❌ Não", "cancelaAction")],
+  ]));
+});
+
+//bot.action("addLiquidezAction", (ctx) => ctx.scene.enter("config-carteira"));
+bot.action("addLiquidezAction", async (ctx) => {
+  await ctx.answerCbQuery();
+  return ctx.scene.enter("adicionaliquidezScene");
+});
+bot.action('cancelaAction', async (ctx) => {
+  ctx.reply("Cancelado");
+});
 
 bot.launch();
 console.log("🤖 Bot do Telegram iniciado com acesso privado!");

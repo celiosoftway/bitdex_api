@@ -2,12 +2,15 @@
 require("dotenv").config();
 const { ethers } = require("ethers");
 
-const LiquidityPoolManagerArtifact = require("./LiquidityPoolManager.json");
-const LiquidityPoolManagerAbi = LiquidityPoolManagerArtifact.abi;
-
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-const contractAddress = process.env.LIQUIDITY_POOL_ADDRESS;
+
+const LiquidityPoolManagerArtifact = require("./LiquidityPoolManager.json");
+const LiquidityPoolManagerAbi = LiquidityPoolManagerArtifact.abi;
+const LiquidityPoolAddress = process.env.LIQUIDITY_POOL_ADDRESS;
+
+const TokenMinerArtifact = require("./TokenMiner.json");
+const TokenMinerAbi = TokenMinerArtifact.abi;
 
 const ERC20_ABI = [
     // Some common ERC-20 functions
@@ -21,13 +24,10 @@ const ERC20_ABI = [
 
 const bitusdt = new ethers.Contract(process.env.BITUSDT_ADDRESS, ERC20_ABI, provider);
 
-function getContract(signerOrProvider = provider) {
-    return new ethers.Contract(contractAddress, LiquidityPoolManagerAbi, signerOrProvider);
+function getContract(signerOrProvider = provider, abi, contractAddress) {
+    return new ethers.Contract(contractAddress, abi, signerOrProvider);
 }
 
-// Criar instância com o signer (carteira)
-const contract = getContract(wallet);
-console.log("✅ Conectado ao contrato...");
 
 /*
 ✅ Funções de Leitura (sem custo de gas):
@@ -44,6 +44,10 @@ console.log("✅ Conectado ao contrato...");
 
 
 async function Owner() {
+    // Criar instância com o signer (carteira)
+    const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
+    console.log("✅ Conectado ao contrato...");
+
     try {
         const owner = await contract.owner();
         console.log("Owner do contrato:", owner);
@@ -55,7 +59,11 @@ async function Owner() {
 async function AddLiquidez(amount) {
     try {
 
-        await aprove(amount);
+        // Criar instância com o signer (carteira)
+        const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
+        console.log("✅ Conectado ao contrato...");
+
+        await aprove(amount, LiquidityPoolAddress);
         const decimals = await bitusdt.decimals();
 
         const tx = await contract.addLiquidez(ethers.parseUnits(amount, decimals));
@@ -65,16 +73,37 @@ async function AddLiquidez(amount) {
         const receipt = await tx.wait();
         console.log("✅ Confirmada no bloco:", receipt.blockNumber);
 
+        const txx = `https://amoy.polygonscan.com/tx/${tx.hash}`
+
         const saldoBITUSDT1 = await saldoBITUSDT();
         const saldoLPUSDT1 = await saldoLPUSDT();
 
+        return txx;
+
     } catch (error) {
         console.error("Erro ao adicionar liquidez:", error);
+        throw error;
     }
 }
 
+async function removeLiquidez(amount) {
+    // Criar instância com o signer (carteira)
+    const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
+    console.log("✅ Conectado ao contrato...");
 
-async function aprove(amount) {
+    const decimals = await bitusdt.decimals();
+    const tx = await contract.removeLiquidez(ethers.parseUnits(amount, decimals));
+
+    console.log("Transação enviada:", tx.hash);
+    console.log(`Link https://amoy.polygonscan.com/tx/${tx.hash}`);
+    const receipt = await tx.wait();
+    console.log("✅ Confirmada no bloco:", receipt.blockNumber);
+
+    const saldoBITUSDT1 = await saldoBITUSDT();
+    const saldoLPUSDT1 = await saldoLPUSDT();
+}
+
+async function aprove(amount, contractAddress) {
     const bitusdtAbi = [
         "function approve(address spender, uint256 amount) public returns (bool)"
     ];
@@ -101,7 +130,7 @@ async function saldoLPUSDT() {
     const balance = await lpusdt.balanceOf(wallet.address);
     const valor = await formata(balance)
 
-    console.log("💰 Saldo de LPUSDT:",valor ); // Ex: 3.000,000
+    console.log("💰 Saldo de LPUSDT:", valor); // Ex: 3.000,000
     return valor;
 }
 
@@ -123,7 +152,8 @@ async function saldoBITUSDT() {
     return valor;
 }
 
-// AddLiquidez("10000")
+//AddLiquidez("10")
+//removeLiquidez("5")
 
 // Exporta funções necessárias
 module.exports = {
