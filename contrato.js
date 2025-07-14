@@ -12,6 +12,7 @@ const LiquidityPoolAddress = process.env.LIQUIDITY_POOL_ADDRESS;
 const TokenMinerArtifact = require("./TokenMiner.json");
 const TokenMinerAbi = TokenMinerArtifact.abi;
 
+
 const ERC20_ABI = [
     // Some common ERC-20 functions
     "function approve(address spender, uint256 amount) returns (bool)",
@@ -56,14 +57,42 @@ async function Owner() {
     }
 }
 
+async function approveMax(spenderAddress) {
+    //const bitusdtContract = new ethers.Contract(process.env.BITUSDT_ADDRESS, ERC20_ABI, wallet);
+    const maxUint256 = ethers.MaxUint256; // Valor máximo possível
+
+    try {
+        console.log(`Aprovando ${spenderAddress} a gastar o máximo de BITUSDT...`);
+        const tx = await bitusdt.approve(spenderAddress, maxUint256);
+        await tx.wait();
+        console.log("✅ Aprovado com sucesso!");
+    } catch (error) {
+        console.error("Erro ao aprovar:", error);
+    }
+}
+
 async function AddLiquidez(amount) {
     try {
+
+        const saldoBITUSDT1 = await saldoBITUSDT();
+        const saldoLPUSDT1 = await saldoLPUSDT();
 
         // Criar instância com o signer (carteira)
         const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
         console.log("✅ Conectado ao contrato...");
 
-        await aprove(amount, LiquidityPoolAddress);
+        const currentAllowance = await bitusdt.allowance(wallet.address, LiquidityPoolAddress);
+
+
+        if (currentAllowance < amount) {
+            console.log("Aprovação insuficiente. Aprovando novo valor...");
+
+            approveMax(LiquidityPoolAddress);
+            console.log("✅ Aprovado com sucesso!");
+        } else {
+            console.log("✅ Aprovação já é suficiente. Pulando.");
+        }
+
         const decimals = await bitusdt.decimals();
 
         const tx = await contract.addLiquidez(ethers.parseUnits(amount, decimals));
@@ -74,9 +103,6 @@ async function AddLiquidez(amount) {
         console.log("✅ Confirmada no bloco:", receipt.blockNumber);
 
         const txx = `https://amoy.polygonscan.com/tx/${tx.hash}`
-
-        const saldoBITUSDT1 = await saldoBITUSDT();
-        const saldoLPUSDT1 = await saldoLPUSDT();
 
         return txx;
 
@@ -154,6 +180,7 @@ async function saldoBITUSDT() {
 
 //AddLiquidez("10")
 //removeLiquidez("5")
+ //approveMax(LiquidityPoolAddress);
 
 // Exporta funções necessárias
 module.exports = {

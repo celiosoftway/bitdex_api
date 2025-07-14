@@ -58,7 +58,7 @@ async function balanceHandler(ctx) {
     const BITUSDT = await saldoBITUSDT();
     const LPUSDT = await saldoLPUSDT();
 
-    let mensagem = `*Saldo da sua carteira* \n\n `;
+    let mensagem = `*Saldo da sua carteira* \n\n`;
     mensagem += `💰 Saldo em BITUSDT: ${BITUSDT}\n`
     mensagem += `💸 Saldo em LPUSDT: ${LPUSDT} \n\n`;
  

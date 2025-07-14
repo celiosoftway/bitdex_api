@@ -58,7 +58,7 @@ bot.hears("🔍 Transações", transacaoHandler);
 
 
 bot.hears("➕ Adicionar Liquidez", async (ctx) => {
-  return ctx.reply("⚙️ Deceja adicionar liquidez no contrato?", Markup.inlineKeyboard([
+  return ctx.reply("⚙️ Deseja adicionar liquidez no contrato?", Markup.inlineKeyboard([
     [Markup.button.callback("✅ Sim", "addLiquidezAction")],
     [Markup.button.callback("❌ Não", "cancelaAction")],
   ]));
@@ -69,9 +69,28 @@ bot.action("addLiquidezAction", async (ctx) => {
   await ctx.answerCbQuery();
   return ctx.scene.enter("adicionaliquidezScene");
 });
+
+
+
+bot.hears("➖ Remover Liquidez", async (ctx) => {
+  return ctx.reply("⚙️ Deseja remover liquidez no contrato?", Markup.inlineKeyboard([
+    [Markup.button.callback("✅ Sim", "removeLiquidezAction")],
+    [Markup.button.callback("❌ Não", "cancelaAction")],
+  ]));
+});
+
+bot.action("removeLiquidezAction", async (ctx) => {
+  await ctx.answerCbQuery();
+  return ctx.scene.enter("removeliquidezScene");
+});
+
+// cancela
 bot.action('cancelaAction', async (ctx) => {
   ctx.reply("Cancelado");
 });
+
+
+
 
 bot.launch();
 console.log("🤖 Bot do Telegram iniciado com acesso privado!");
