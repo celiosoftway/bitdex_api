@@ -126,9 +126,36 @@ async function getTotalClaimed(userAddress) {
   }
 }
 
+async function withdrawStake(amountString) {
+    try {
+        const miner = new ethers.Contract(TOKENMINER_ADDRESS, TokenMinerAbi, wallet);
 
-// Executa o stake com 10 BITUSDT como exemplo
+        // Pega decimais do token BITUSDT (geralmente 18)
+        const decimals = 18; // fixo, ou se quiser dinâmico, busque de um contrato
+        const amount = ethers.parseUnits(amountString, decimals);
+
+        // Gas prioritário
+        const overrides = {
+            maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
+            maxFeePerGas: ethers.parseUnits("40", "gwei")
+        };
+
+        console.log(`⏳ Enviando transação de retirada de ${amountString} BITUSDT...`);
+        const tx = await miner.withdraw(amount, overrides);
+
+        console.log("🔗 Transação enviada:", tx.hash);
+        const receipt = await tx.wait();
+
+        console.log("✅ Saque realizado com sucesso no bloco:", receipt.blockNumber);
+        console.log(`🔗 https://amoy.polygonscan.com/tx/${tx.hash}`);
+    } catch (err) {
+        console.error("❌ Erro ao sacar BITUSDT:", err);
+    }
+}
+
+
 // stakeBITUSDT("10");
 // claimRewards()
 // checkMinerStatus();
 // getTotalClaimed(USER_ADDRESS);
+// withdrawStake
