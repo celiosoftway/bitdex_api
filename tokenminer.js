@@ -129,12 +129,20 @@ async function getTotalClaimed(userAddress) {
 async function withdrawStake(amountString) {
     try {
         const miner = new ethers.Contract(TOKENMINER_ADDRESS, TokenMinerAbi, wallet);
-
-        // Pega decimais do token BITUSDT (geralmente 18)
-        const decimals = 18; // fixo, ou se quiser dinâmico, busque de um contrato
+        const decimals = 18;
         const amount = ethers.parseUnits(amountString, decimals);
 
-        // Gas prioritário
+        // 🔍 Consulta saldo em stake
+        const deposit = await miner.deposits(wallet.address);
+        const currentStake = deposit.amount;
+
+        if (currentStake < amount) {
+            const stakedFormatted = Number(ethers.formatUnits(currentStake, decimals)).toFixed(6);
+            console.log(`❌ Saldo insuficiente em stake. Você tem ${stakedFormatted} BITUSDT em stake.`);
+            return;
+        }
+
+        // Overrides de gas
         const overrides = {
             maxPriorityFeePerGas: ethers.parseUnits("30", "gwei"),
             maxFeePerGas: ethers.parseUnits("40", "gwei")
@@ -158,4 +166,4 @@ async function withdrawStake(amountString) {
 // claimRewards()
 // checkMinerStatus();
 // getTotalClaimed(USER_ADDRESS);
-// withdrawStake
+withdrawStake("25")
