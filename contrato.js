@@ -74,8 +74,8 @@ async function approveMax(spenderAddress) {
 async function AddLiquidez(amount) {
     try {
 
-        const saldoBITUSDT1 = await saldoBITUSDT();
-        const saldoLPUSDT1 = await saldoLPUSDT();
+        // const saldoBITUSDT1 = await saldoBITUSDT();
+        // const saldoLPUSDT1 = await saldoLPUSDT();
 
         // Criar instância com o signer (carteira)
         const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
@@ -102,8 +102,7 @@ async function AddLiquidez(amount) {
         const receipt = await tx.wait();
         console.log("✅ Confirmada no bloco:", receipt.blockNumber);
 
-        const txx = `https://amoy.polygonscan.com/tx/${tx.hash}`
-
+        const txx = `https://amoy.polygonscan.com/tx/${tx.hash}`;
         return txx;
 
     } catch (error) {
@@ -113,20 +112,29 @@ async function AddLiquidez(amount) {
 }
 
 async function removeLiquidez(amount) {
-    // Criar instância com o signer (carteira)
-    const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
-    console.log("✅ Conectado ao contrato...");
+    try {
+        // Criar instância com o signer (carteira)
+        const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
+        console.log("✅ Conectado ao contrato...");
 
-    const decimals = await bitusdt.decimals();
-    const tx = await contract.removeLiquidez(ethers.parseUnits(amount, decimals));
+        const decimals = await bitusdt.decimals();
+        const tx = await contract.removeLiquidez(ethers.parseUnits(amount, decimals));
 
-    console.log("Transação enviada:", tx.hash);
-    console.log(`Link https://amoy.polygonscan.com/tx/${tx.hash}`);
-    const receipt = await tx.wait();
-    console.log("✅ Confirmada no bloco:", receipt.blockNumber);
+        console.log("Transação enviada:", tx.hash);
+        console.log(`Link https://amoy.polygonscan.com/tx/${tx.hash}`);
+        const receipt = await tx.wait();
+        console.log("✅ Confirmada no bloco:", receipt.blockNumber);
 
-    const saldoBITUSDT1 = await saldoBITUSDT();
-    const saldoLPUSDT1 = await saldoLPUSDT();
+        // const saldoBITUSDT1 = await saldoBITUSDT();
+        // const saldoLPUSDT1 = await saldoLPUSDT();
+
+        const txx = `https://amoy.polygonscan.com/tx/${tx.hash}`
+        return txx;
+
+    } catch (error) {
+        console.error("Erro ao adicionar liquidez:", error);
+        throw error;
+    }
 }
 
 async function aprove(amount, contractAddress) {
@@ -180,7 +188,7 @@ async function saldoBITUSDT() {
 
 //AddLiquidez("10")
 //removeLiquidez("5")
- //approveMax(LiquidityPoolAddress);
+//approveMax(LiquidityPoolAddress);
 
 // Exporta funções necessárias
 module.exports = {
@@ -189,6 +197,7 @@ module.exports = {
     aprove,
     saldoLPUSDT,
     saldoBITUSDT,
+    removeLiquidez
 };
 
 

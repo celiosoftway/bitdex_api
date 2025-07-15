@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { Telegraf, Scenes, session,Markup  } = require("telegraf");
 const adicionarLiquidezScene = require("./scenes/adicionarLiquidezScene");
+const removeliquidezScene =  require("./scenes/removeliquidezScene");
 
 const {    
     startHandler,
@@ -16,7 +17,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 // Configurar Stage com cenas
-const stage = new Scenes.Stage([adicionarLiquidezScene,]);
+const stage = new Scenes.Stage([adicionarLiquidezScene,removeliquidezScene]);
 bot.use(session());
 bot.use(stage.middleware());
 

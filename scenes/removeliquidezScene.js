@@ -3,7 +3,7 @@
 const { Scenes } = require("telegraf");
 const { removeLiquidez } = require("../contrato"); // importa a função
 
-const adicionaliquidezScene = new Scenes.WizardScene(
+const removeliquidezScene = new Scenes.WizardScene(
   "removeliquidezScene",
   async (ctx) => {
     await ctx.reply("💵 Envie o valor (em USDT) que deseja remover:");
@@ -31,4 +31,4 @@ const adicionaliquidezScene = new Scenes.WizardScene(
   }
 );
 
-module.exports = adicionaliquidezScene;
+module.exports = removeliquidezScene;
