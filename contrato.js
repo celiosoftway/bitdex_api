@@ -9,9 +9,6 @@ const LiquidityPoolManagerArtifact = require("./LiquidityPoolManager.json");
 const LiquidityPoolManagerAbi = LiquidityPoolManagerArtifact.abi;
 const LiquidityPoolAddress = process.env.LIQUIDITY_POOL_ADDRESS;
 
-const TokenMinerArtifact = require("./TokenMiner.json");
-const TokenMinerAbi = TokenMinerArtifact.abi;
-
 
 const ERC20_ABI = [
     // Some common ERC-20 functions
