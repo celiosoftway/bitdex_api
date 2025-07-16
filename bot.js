@@ -3,6 +3,11 @@ const { Telegraf, Scenes, session,Markup  } = require("telegraf");
 const adicionarLiquidezScene = require("./scenes/adicionarLiquidezScene");
 const removeliquidezScene =  require("./scenes/removeliquidezScene");
 
+const stakeScene =  require("./scenes/stakeScene");
+const withdrawScene =  require("./scenes/withdrawScene");
+const claimRewardsScene =  require("./scenes/claimRewardsScene");
+const minerStatusScene =  require("./scenes/minerStatusScene");
+
 const {    
     startHandler,
     infoHandler,
@@ -17,7 +22,14 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
 // Configurar Stage com cenas
-const stage = new Scenes.Stage([adicionarLiquidezScene,removeliquidezScene]);
+const stage = new Scenes.Stage([
+  adicionarLiquidezScene,
+  removeliquidezScene, 
+  stakeScene, 
+  withdrawScene, 
+  claimRewardsScene, 
+  minerStatusScene]);
+
 bot.use(session());
 bot.use(stage.middleware());
 
@@ -54,7 +66,7 @@ bot.hears("👤 Info", infoHandler);
 //bot.hears("➕ Adicionar Liquidez", addLiquidezHandler);
 //bot.hears("➖ Remover Liquidez", removeLiquidezHandler);
 bot.hears("🧾 Balance", balanceHandler);
-bot.hears("💰 Stake", stakeHandler,);
+// bot.hears("💰 Stake", stakeHandler,);
 bot.hears("🔍 Transações", transacaoHandler);
 
 
@@ -65,14 +77,14 @@ bot.hears("➕ Adicionar Liquidez", async (ctx) => {
   ]));
 });
 
-//bot.action("addLiquidezAction", (ctx) => ctx.scene.enter("config-carteira"));
+// adiciona liquidez
 bot.action("addLiquidezAction", async (ctx) => {
   await ctx.answerCbQuery();
   return ctx.scene.enter("adicionaliquidezScene");
 });
 
 
-
+// remove liquidez
 bot.hears("➖ Remover Liquidez", async (ctx) => {
   return ctx.reply("⚙️ Deseja remover liquidez no contrato?", Markup.inlineKeyboard([
     [Markup.button.callback("✅ Sim", "removeLiquidezAction")],
@@ -85,13 +97,41 @@ bot.action("removeLiquidezAction", async (ctx) => {
   return ctx.scene.enter("removeliquidezScene");
 });
 
+//stake
+bot.hears("💰 Stake", async (ctx) => {
+  return ctx.reply("⚙️ Escolha uma opção:", Markup.inlineKeyboard([
+    [Markup.button.callback("💰 Adicionar Stake", "stakeAction")],
+    [Markup.button.callback("💸 Withdraw", "withdrawActiom")],
+    [Markup.button.callback("📊 Claim Rewards", "claimRewardsActiom")],
+    [Markup.button.callback("🧾 Miner Status", "minerStatusActiom")],
+    [Markup.button.callback("❌ Sair", "cancelaAction")],
+  ]));
+});
+
+bot.action("stakeAction", async (ctx) => {
+  await ctx.answerCbQuery();
+  return ctx.scene.enter("stakeScene");
+});
+
+bot.action("withdrawActiom", async (ctx) => {
+  await ctx.answerCbQuery();
+  return ctx.scene.enter("withdrawScene");
+});
+
+bot.action("claimRewardsActiom", async (ctx) => {
+  await ctx.answerCbQuery();
+  return ctx.scene.enter("claimRewardsScene");
+});
+
+bot.action("minerStatusActiom", async (ctx) => {
+  await ctx.answerCbQuery();
+  return ctx.scene.enter("minerStatusScene");
+});
+
 // cancela
 bot.action('cancelaAction', async (ctx) => {
   ctx.reply("Cancelado");
 });
-
-
-
 
 bot.launch();
 console.log("🤖 Bot do Telegram iniciado com acesso privado!");

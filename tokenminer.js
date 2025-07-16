@@ -166,4 +166,12 @@ async function withdrawStake(amountString) {
 // claimRewards()
 // checkMinerStatus();
 // getTotalClaimed(USER_ADDRESS);
-withdrawStake("25")
+// withdrawStake("25")
+
+module.exports = {
+  stakeBITUSDT,
+  claimRewards,
+  checkMinerStatus,
+  getTotalClaimed,
+  withdrawStake
+};
