@@ -5,10 +5,9 @@ const { ethers } = require("ethers");
 const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
-const LiquidityPoolManagerArtifact = require("./LiquidityPoolManager.json");
+const LiquidityPoolManagerArtifact = require("./abi/LiquidityPoolManager.json");
 const LiquidityPoolManagerAbi = LiquidityPoolManagerArtifact.abi;
 const LiquidityPoolAddress = process.env.LIQUIDITY_POOL_ADDRESS;
-
 
 const ERC20_ABI = [
     // Some common ERC-20 functions
@@ -26,21 +25,6 @@ function getContract(signerOrProvider = provider, abi, contractAddress) {
     return new ethers.Contract(contractAddress, abi, signerOrProvider);
 }
 
-
-/*
-✅ Funções de Leitura (sem custo de gas):
-    owner() → address Retorna o dono do contrato.
-    bitusdt() → address Retorna o endereço do token BITUSDT usado.
-    lpusdt() → address Retorna o endereço do token LPUSDT usado.
-
-✅ Funções de Escrita (requerem gas):
-    addLiquidez(uint256 amount)
-    removeLiquidez(uint256 amount)
-    transferOwnership(address newOwner)
-    renounceOwnership()
-*/
-
-
 async function Owner() {
     // Criar instância com o signer (carteira)
     const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
@@ -55,14 +39,14 @@ async function Owner() {
 }
 
 async function approveMax(spenderAddress) {
-    //const bitusdtContract = new ethers.Contract(process.env.BITUSDT_ADDRESS, ERC20_ABI, wallet);
+    const bitusdtContract = new ethers.Contract(process.env.BITUSDT_ADDRESS, ERC20_ABI, wallet);
     const maxUint256 = ethers.MaxUint256; // Valor máximo possível
 
     try {
         console.log(`Aprovando ${spenderAddress} a gastar o máximo de BITUSDT...`);
-        const tx = await bitusdt.approve(spenderAddress, maxUint256);
+        const tx = await bitusdtContract.approve(spenderAddress, maxUint256);
         await tx.wait();
-        console.log("✅ Aprovado com sucesso!");
+        console.log("✅ Aprovado com sucesso!!!");
     } catch (error) {
         console.error("Erro ao aprovar:", error);
     }
@@ -70,25 +54,34 @@ async function approveMax(spenderAddress) {
 
 async function AddLiquidez(amount) {
     try {
-
-        // const saldoBITUSDT1 = await saldoBITUSDT();
-        // const saldoLPUSDT1 = await saldoLPUSDT();
-
         // Criar instância com o signer (carteira)
         const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
-        console.log("✅ Conectado ao contrato...");
+        console.log("✅ Conectado ao contrato...:", contract);
+
+        console.log(
+            "Funções disponíveis:",
+            contract.interface.fragments
+                .filter(f => f.type === "function")
+                .map(f => f.name)
+        );
 
         const currentAllowance = await bitusdt.allowance(wallet.address, LiquidityPoolAddress);
 
+        console.log("BITUSDT address:", process.env.BITUSDT_ADDRESS);
 
         if (currentAllowance < amount) {
             console.log("Aprovação insuficiente. Aprovando novo valor...");
-
-            approveMax(LiquidityPoolAddress);
-            console.log("✅ Aprovado com sucesso!");
+            await approveMax(LiquidityPoolAddress);
         } else {
             console.log("✅ Aprovação já é suficiente. Pulando.");
         }
+
+
+        console.log("AddLiquidez:");
+        console.log("Contract Address:", LiquidityPoolAddress);
+        console.log("Signer Address:", wallet.address);
+        console.log("Amount:", amount.toString());
+
 
         const decimals = await bitusdt.decimals();
 
@@ -121,9 +114,6 @@ async function removeLiquidez(amount) {
         console.log(`Link https://amoy.polygonscan.com/tx/${tx.hash}`);
         const receipt = await tx.wait();
         console.log("✅ Confirmada no bloco:", receipt.blockNumber);
-
-        // const saldoBITUSDT1 = await saldoBITUSDT();
-        // const saldoLPUSDT1 = await saldoLPUSDT();
 
         const txx = `https://amoy.polygonscan.com/tx/${tx.hash}`
         return txx;
@@ -165,11 +155,6 @@ async function saldoLPUSDT() {
     return valor;
 }
 
-async function formata(valor) {
-    const formatted = Math.floor(Number(ethers.formatUnits(valor, 18))).toLocaleString("en-US").replace(/,/g, '.');
-    return formatted;
-}
-
 async function saldoBITUSDT() {
     const bitusdtAbi = [
         "function balanceOf(address owner) view returns (uint256)"
@@ -183,11 +168,38 @@ async function saldoBITUSDT() {
     return valor;
 }
 
-//AddLiquidez("10")
+async function formata(valor) {
+    const formatted = Math.floor(Number(ethers.formatUnits(valor, 18))).toLocaleString("en-US").replace(/,/g, '.');
+    return formatted;
+}
+
+
+
 //removeLiquidez("5")
 //approveMax(LiquidityPoolAddress);
 
 // Exporta funções necessárias
+
+
+(async () => {
+    //AddLiquidez("10")
+    //const contract = getContract(wallet, LiquidityPoolManagerAbi, LiquidityPoolAddress);
+
+    /*
+            // Debug: tentar simular com callStatic
+        try {
+            console.log("⏳ Simulação iniciou (callStatic)");
+            await contract.callStatic.addLiquidez(parsedAmount);
+            console.log("✅ Simulação passou (callStatic)");
+        } catch (err) {
+            console.error("❌ Simulação falhou (callStatic):", err);
+            throw err; // não continue se callStatic falhou
+        }
+*/
+    //AddLiquidez("10")
+})();
+
+
 module.exports = {
     Owner,
     AddLiquidez,

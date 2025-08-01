@@ -19,7 +19,7 @@ const ERC20_ABI = [
   "event Transfer(address indexed from, address indexed to, uint256 value)",
   "event Approval(address indexed owner, address indexed spender, uint256 value)"
 ];
-const TokenMinerAbi = JSON.parse(fs.readFileSync("./TokenMiner.json")).abi;
+const TokenMinerAbi = JSON.parse(fs.readFileSync("./abi/TokenMiner.json")).abi;
 
 // Endereço do contrato BITDEX
 const BITDEX_ADDRESS = process.env.BITDEX_ADDRESS;

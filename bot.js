@@ -63,10 +63,7 @@ bot.command("start", transacaoHandler);
 
 // Comandos hears
 bot.hears("👤 Info", infoHandler);
-//bot.hears("➕ Adicionar Liquidez", addLiquidezHandler);
-//bot.hears("➖ Remover Liquidez", removeLiquidezHandler);
 bot.hears("🧾 Balance", balanceHandler);
-// bot.hears("💰 Stake", stakeHandler,);
 bot.hears("🔍 Transações", transacaoHandler);
 
 
@@ -108,7 +105,7 @@ bot.hears("💰 Stake", async (ctx) => {
   ]));
 });
 
-bot.action("stakeAction", async (ctx) => {
+bot.action("stakeAction", async (ctx) => {  
   await ctx.answerCbQuery();
   return ctx.scene.enter("stakeScene");
 });

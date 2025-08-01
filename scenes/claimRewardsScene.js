@@ -2,7 +2,7 @@ const { Scenes } = require("telegraf");
 const { claimRewards } = require("../tokenminer"); // importa a função
 
 const claimRewardsScene = new Scenes.WizardScene(
-  "removeliquidezScene",
+  "claimRewardsScene",
   async (ctx) => {
     await ctx.reply("💵 Fale algo");
     return ctx.wizard.next();
